@@ -18,8 +18,6 @@ This design avoids tight coupling between HTML structure and parsing logic, maki
 
 More broadly, the system is structured as a reusable crawling framework rather than a one-off scraper, with a strong emphasis on **extensibility, deterministic behavior, and resilience to unstable web structures**.
 
----
-
 ## Architecture
 
 ### High-Level Pipeline
