@@ -44,7 +44,7 @@ Batch Write (persistence)
 
 ```
 
----
+
 
 ### Crawl Orchestration
 
@@ -58,7 +58,7 @@ The crawling process is coordinated by a central orchestrator that:
 
 The system uses a thread pool for parallel crawling, enabling efficient traversal while maintaining control over concurrency.
 
----
+
 
 ### Frontier (URL Scheduling)
 
@@ -74,7 +74,7 @@ Key properties:
 
 This prevents redundant crawling and avoids infinite loops caused by URL variations such as query parameters.
 
----
+
 
 ### URL Normalization
 
@@ -94,7 +94,7 @@ This ensures that logically identical pages map to a single canonical URL, which
 
 Media URLs use a slightly different normalization strategy to preserve meaningful query parameters when necessary.
 
----
+
 
 ### Fetcher (HTTP Layer)
 
@@ -109,7 +109,7 @@ Features:
 
 The fetcher returns both the response body and the final resolved URL, which is used for canonicalization and deduplication.
 
----
+
 
 ### Language-Aware Crawling
 
@@ -126,7 +126,7 @@ This guarantees:
 - Consistent language across all extracted data  
 - Avoidance of duplicate ingestion across locales  
 
----
+
 
 ### Parser (Page Classification)
 
@@ -144,7 +144,7 @@ This routing layer ensures that:
 - Parsing complexity is isolated per page type  
 - The system remains extensible for additional page types  
 
----
+
 
 ## Extractor Architecture
 
@@ -161,7 +161,7 @@ Each extractor:
 
 The parser composes multiple extractors dynamically and aggregates their outputs.
 
----
+
 
 ### Execution Model
 
@@ -177,7 +177,7 @@ This design provides:
 - Fault isolation (failure in one extractor does not break others)  
 - Ease of extension (new fields require only a new extractor)  
 
----
+
 
 ### Product Extraction
 
@@ -193,7 +193,7 @@ Extracted fields include:
 
 Many of these fields are derived from semi-structured DOM patterns such as key-value blocks or alternating nodes, requiring custom parsing logic rather than relying solely on static CSS selectors.
 
----
+
 
 ### Winery Extraction
 
@@ -207,7 +207,7 @@ Sources:
 
 Each page produces a partial record, which is later merged into a complete winery entity.
 
----
+
 
 ### Media Extraction
 
@@ -227,7 +227,7 @@ Additional logic includes:
 - Normalizing media URLs  
 - Deduplicating media per page  
 
----
+
 
 ### Link Discovery
 
@@ -244,7 +244,7 @@ Discovered URLs are:
 - Filtered to ensure they are internal  
 - Normalized before being added to the frontier  
 
----
+
 
 ### Crawl Scope Control
 
@@ -261,13 +261,13 @@ This ensures:
 - Efficient crawling  
 - No drift into irrelevant or infinite sections  
 
----
+
 
 ## Data Model
 
 The system produces three primary entity types: Winery, Product, and Media.
 
----
+
 
 ### Winery
 
@@ -282,7 +282,7 @@ Key attributes:
 
 The model supports incremental enrichment, where different pages contribute different parts of the final entity.
 
----
+
 
 ### Product
 
@@ -297,7 +297,7 @@ Key features:
 
 This design enables downstream querying and analysis rather than simple text storage.
 
----
+
 
 ### Media
 
@@ -311,7 +311,7 @@ Attributes:
 
 Media records are deduplicated and retain provenance for traceability.
 
----
+
 
 ## Data Ingestion Strategy
 
@@ -329,7 +329,7 @@ A key aspect of the system is its ability to handle partial and evolving data:
 - Later crawls can enrich existing data  
 - Merging logic ensures no loss of information  
 
----
+
 
 ## Setup
 
@@ -341,7 +341,7 @@ pip install -r requirements.txt
 
 ```
 
----
+
 
 ### Environment Configuration
 
@@ -359,7 +359,7 @@ BATCH_SIZE=25
 
 ```
 
----
+
 
 ### Initialize Database
 
@@ -369,7 +369,7 @@ python scripts/init_db.py
 
 ```
 
----
+
 
 ### Run the Crawler
 
@@ -387,7 +387,7 @@ python src/main.py
 
 The crawler starts from the configured base URL and recursively discovers and processes relevant pages.
 
----
+
 
 ## CLI Usage
 
@@ -401,7 +401,7 @@ python -m src.cli.main crawl
 
 This will start crawling from the configured base URL and populate the database.
 
----
+
 
 ### List products
 
@@ -415,7 +415,7 @@ You can control how many results are returned:
 python -m src.cli.main list-products --limit 10
 ```
 
----
+
 
 ### Show a specific product
 
@@ -425,7 +425,7 @@ python -m src.cli.main show-product "cuvée royale brut"
 
 This will display all stored fields for the selected product.
 
----
+
 
 ### Notes
 
@@ -451,7 +451,7 @@ Output:
 - Media assets extracted from across the site  
 - Internal links discovered and traversed  
 
----
+
 
 ## Key Design Decisions
 
@@ -465,7 +465,7 @@ Benefits:
 - Independent evolution of parsing logic  
 - Better fault isolation  
 
----
+
 
 ### 2. Deterministic Crawling
 
@@ -475,7 +475,7 @@ Strict URL normalization and deduplication ensure:
 - Stable ingestion behavior  
 - Predictable crawl graph  
 
----
+
 
 ### 3. Structure-Aware Parsing
 
@@ -487,7 +487,7 @@ The system handles:
 - Alternating DOM patterns  
 - Nested content structures  
 
----
+
 
 ### 4. Multi-Page Entity Assembly
 
@@ -499,7 +499,7 @@ The system:
 - Merges them across pages  
 - Produces a complete structured entity  
 
----
+
 
 ### 5. Robustness to Real-World Web Variability
 
@@ -515,7 +515,7 @@ This is achieved through:
 - Independent extractors  
 - Merge-based data modeling  
 
----
+
 
 ## Future Improvements
 
