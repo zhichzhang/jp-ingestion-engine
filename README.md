@@ -1,4 +1,4 @@
-# # JP Ingestion Engine
+# JP Ingestion Engine
 
 ## Overview
 
