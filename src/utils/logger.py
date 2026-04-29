@@ -6,7 +6,8 @@ import colorlog
 
 
 def setup_logger():
-    level = os.getenv("LOG_LEVEL", "INFO").upper()
+    # level = os.getenv("LOG_LEVEL", "INFO").upper()
+    level = "WARNING"
 
     handler = colorlog.StreamHandler()
 

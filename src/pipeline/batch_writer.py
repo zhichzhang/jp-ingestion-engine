@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 
 from src.db.repository import Repository
-from src.pipeline.models import WineryRecord, ProductRecord, MediaRecord
+from src.pipeline.models import WineryRecord, ProductRecord, MediaRecord, metrics
 
 logger = logging.getLogger("batch")
 
@@ -27,6 +27,7 @@ class BatchWriter:
         wineries: list[WineryRecord],
         products: list[ProductRecord],
         media: list[MediaRecord],
+        track_metrics: bool = True,
     ) -> None:
         logger.info(
             "[FLUSH] wineries=%d products=%d media=%d",
@@ -34,6 +35,12 @@ class BatchWriter:
             len(products),
             len(media),
         )
+
+        if track_metrics:
+            metrics.inc("batch_flushes", 1)
+            metrics.inc("written_wineries", len(wineries))
+            metrics.inc("written_products", len(products))
+            metrics.inc("written_media", len(media))
 
         if wineries:
             new_winery_map = self.repository.upsert_wineries(wineries)

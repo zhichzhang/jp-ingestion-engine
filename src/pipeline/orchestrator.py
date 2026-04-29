@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from threading import Lock
 from urllib.parse import urlparse
 
 import logging
+
+import numpy as np
 
 from src.config import settings
 from src.crawler.fetcher import Fetcher
@@ -21,7 +24,7 @@ from src.db.repository import Repository
 from src.db.supabase_client import get_client
 from src.pipeline.batch_writer import BatchWriter
 from src.pipeline.dedupe import MemoryDedupe
-from src.pipeline.models import MediaRecord, ParsedPage, ProductRecord, WineryRecord
+from src.pipeline.models import MediaRecord, ParsedPage, ProductRecord, WineryRecord, metrics
 
 logger = logging.getLogger("orchestrator")
 
@@ -51,15 +54,17 @@ class Orchestrator:
         return any(path == prefix or path.startswith(prefix + "/") for prefix in allowed_prefixes)
 
     def crawl(self, seed_urls: list[str]) -> dict:
-        logger.info("[START] seeds=%d", len(seed_urls))
+        metrics.__init__()
+        start_time = time.perf_counter()
 
+        logger.info("[START] seeds=%d", len(seed_urls))
         seed_winery = WineryRecord(
             name="Joseph Perrier",
             description=None,
             website_url=settings.base_url,
             source_page_url=settings.base_url,
         )
-        self.writer.flush([seed_winery], [], [])
+        self.writer.flush([seed_winery], [], [], track_metrics=False)
 
         frontier = Frontier(seed_urls)
 
@@ -130,6 +135,31 @@ class Orchestrator:
             self.writer.flush(pending_wineries, pending_products, pending_media)
 
         logger.info("[DONE] pages=%d", total_pages)
+
+        end_time = time.perf_counter()
+        total_time = end_time - start_time
+
+        print("\n=== Ingestion Metrics ===")
+
+        if total_time > 0:
+            print(f"RPS: {metrics.total_requests / total_time:.2f}")
+
+        if metrics.total_requests:
+            print(f"Error Rate: {metrics.failed_requests / metrics.total_requests:.2%}")
+
+        if metrics.total_seen_urls:
+            print(f"Dedup Ratio: {metrics.duplicate_filtered / metrics.total_seen_urls:.2%}")
+
+        if metrics.latencies:
+            print(f"P95 Latency: {np.percentile(metrics.latencies, 95):.3f}s")
+
+        print(f"Crawled Pages: {len(metrics.crawled_urls)}")
+
+        print(f"Records Written: {metrics.written_products}")
+
+        print(f"Batch Flushes: {metrics.batch_flushes}")
+
+        print("=========================\n")
         return {"status": "done", "pages": total_pages}
 
     def _crawl_one(self, url: str) -> ParsedPage:
@@ -141,6 +171,7 @@ class Orchestrator:
                 logger.info("[SKIP FINAL] %s", canonical)
                 return ParsedPage(None, [], [], set())
             self._seen_final_urls.add(canonical)
+            metrics.add_crawled(canonical)
 
         logger.info("[CRAWL] url=%s final_url=%s", url, final_url)
 

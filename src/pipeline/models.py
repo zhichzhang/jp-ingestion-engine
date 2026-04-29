@@ -1,6 +1,8 @@
 # src/pipeline/models.py
 from __future__ import annotations
 
+import threading
+from collections import deque
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any
@@ -131,3 +133,37 @@ class ParsedPage:
     products: list[ProductRecord] = field(default_factory=list)
     media: list[MediaRecord] = field(default_factory=list)
     discovered_urls: set[str] = field(default_factory=set)
+
+
+class Metrics:
+    def __init__(self):
+        self.lock = threading.Lock()
+
+        self.total_requests = 0
+        self.success_requests = 0
+        self.failed_requests = 0
+
+        self.total_seen_urls = 0
+        self.unique_urls = 0
+        self.duplicate_filtered = 0
+
+        self.batch_flushes = 0
+        self.written_wineries = 0
+        self.written_products = 0
+        self.written_media = 0
+
+        self.latencies = deque(maxlen=10000)
+        self.crawled_urls = set()
+
+    def inc(self, name, v=1):
+        with self.lock:
+            setattr(self, name, getattr(self, name) + v)
+
+    def add_latency(self, t):
+        with self.lock:
+            self.latencies.append(t)
+
+    def add_crawled(self, url):
+        with self.lock:
+            self.crawled_urls.add(url)
+metrics = Metrics()

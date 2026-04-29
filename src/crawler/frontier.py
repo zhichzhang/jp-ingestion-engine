@@ -4,6 +4,7 @@ from collections import deque
 import logging
 
 from src.crawler.normalize import normalize_url
+from src.pipeline.models import metrics
 
 logger = logging.getLogger("frontier")
 
@@ -19,22 +20,45 @@ class Frontier:
         for url in seeds:
             self.add(url)
 
+    # def add(self, url: str) -> None:
+    #     if not url:
+    #         return
+    #
+    #     norm = normalize_url(url)
+    #
+    #     if norm in self.seen:
+    #         logger.debug(f"[SKIP] already seen: {norm}")
+    #         return
+    #
+    #     if norm in self.queued:
+    #         logger.debug(f"[SKIP] already queued: {norm}")
+    #         return
+    #
+    #     self.queue.append(url)
+    #     self.queued.add(norm)
+    #
+    #     logger.debug(f"[ADD] raw={url} norm={norm}")
+
     def add(self, url: str) -> None:
         if not url:
             return
 
         norm = normalize_url(url)
 
+        metrics.inc("total_seen_urls")
+
         if norm in self.seen:
-            logger.debug(f"[SKIP] already seen: {norm}")
+            metrics.inc("duplicate_filtered")
             return
 
         if norm in self.queued:
-            logger.debug(f"[SKIP] already queued: {norm}")
+            metrics.inc("duplicate_filtered")
             return
 
         self.queue.append(url)
         self.queued.add(norm)
+
+        metrics.inc("unique_urls")
 
         logger.debug(f"[ADD] raw={url} norm={norm}")
 
