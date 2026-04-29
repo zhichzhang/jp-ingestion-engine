@@ -357,9 +357,9 @@ Create a `.env` file with:
 
 ```
 
-SUPABASE_URL=...
-SUPABASE_KEY=...
-BASE_URL=[https://www.josephperrier.com/](https://www.josephperrier.com/)
+SUPABASE_URL=your_supabase_url
+SUPABASE_KEY=your_supabase_key
+BASE_URL=https://www.josephperrier.com/
 
 TIMEOUT=20
 MAX_WORKERS=8
