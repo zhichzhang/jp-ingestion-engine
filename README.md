@@ -448,7 +448,7 @@ Input:
 
 ```
 
-[https://www.josephperrier.com/](https://www.josephperrier.com/)
+https://www.josephperrier.com/
 
 ```
 
